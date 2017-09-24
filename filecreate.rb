@@ -26,7 +26,7 @@ def license_header(options={})
  * ALL RIGHTS RESERVED
  * THE CONTENTS OF THIS FILE ARE CONFIDENTIAL
  * DO NOT DISTRIBUTE
-**/
+ */
 EOF
 end
 
@@ -57,7 +57,7 @@ def fileguard_generate(options={})
 EOF
 
   footer = <<-EOF
-#endif #{guard_block}
+#endif /* #{guard_block} */
 EOF
 
   return {

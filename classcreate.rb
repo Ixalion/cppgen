@@ -1,40 +1,82 @@
 require "filecreate"
 
-
 # Structure:
 # options = {
-#   type: *String, # e.g. int
-#   name: *String, # e.g. myFunction
-#   params: Array -> Hash {
-#     type: *String, # e.g. int
-#     Name: *String, # e.g. myParam
-#     default: String, # Can be nil
+#   name: *String, e.g. MyClass
+#   namespace: Array -> String,
+#   parents: Array -> {
+#     scope: String, # e.g. public, defaults to: public
+#     name: *String, # e.g. MyParentClass
+#   },
+#   private: {
+#     functions: Array -> Hash, # (For hash fields see build_function)
+#     fields: Array -> {
+#       type: *String, # e.g. int
+#       name: *String # e.g. myField
+#     }
+#   },
+#   public: {
+#     functions: Array -> Hash, # (For hash fields see build_function)
+#     fields: Array -> {
+#       type: *String, # e.g. int
+#       name: *String # e.g. myField
+#     }
+#   },
+#   public: {
+#     functions: Array -> Hash, # (For hash fields see build_function)
+#     fields: Array -> {
+#       type: *String, # e.g. int
+#       name: *String # e.g. myField
+#     }
 #   }
 # }
-def build_function(options={})
-  raise "function type is invalid '#{options[:type]}'" unless options[:type]
-  raise "function name is invalid '#{options[:name]}'" unless options[:name]
+def validate_class_options(options={})
+  raise "validate_class_options name must be present" unless options[:name]
 
-  options[:params] ||= Array.new
+  options[:namespace] ||= Array.new
+  options[:parents] ||= Array.new
 
-  paramlist = Array.new
+  options[:private] ||= Hash.new
+  options[:private][:functions] ||= Array.new
+  options[:private][:fields] ||= Array.new
 
-  options.params.each_with_index do |param, index|
-    raise "param '#{param}' at index ##{index} has an invalid type" unless param[:type]
-    raise "param '#{param}' at index ##{index} has an invalid name" unless param[:name]
+  options[:protected] ||= Hash.new
+  options[:protected][:functions] ||= Array.new
+  options[:protected][:fields] ||= Array.new
 
-    paramstring = "#{param[:type]} #{param[:name]}"
-    if param[:default]
-      paramstring += " = #{param[:default]}"
-    end
-    paramlist.push(paramstring)
-  end
+  options[:public] ||= Hash.new
+  options[:public][:functions] ||= Array.new
+  options[:public][:fields] ||= Array.new
 
-  paramstring = paramlist.join(", ")
+  return options
+end
 
-<<-EOF
-#{options[:type]} #{options[:name]}(#{paramstring}) {
-  // TODO: Implement me.
-}
-EOF
+# Structure:
+# See validate_class_options
+def compose_class_header(options={})
+  options = validate_class_options(options)
+
+end
+
+# Structure:
+# See validate_class_options
+def compose_class_source(options={})
+  options = validate_class_options(options)
+
+end
+
+# Structure:
+# See validate_class_options
+#
+# return = {
+#   header: String, # The class's header file.
+#   source: String # The class's source file.
+# }
+def compose_class(options={})
+  options = validate_class_options(options)
+
+  return {
+    header: compose_class_header(options),
+    source: compose_class_source(options)
+  }
 end
