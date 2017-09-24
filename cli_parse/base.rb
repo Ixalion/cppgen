@@ -10,9 +10,7 @@ def cli_parse(args)
     class_arguments_parse(args.slice(1..-1), false)
   when "help"
     help_arguments_parse(args.slice(1..-1))
-  when "-h"
-    puts cli_help
-  when "--help"
+  when "-h", "--help"
     puts cli_help
   else
     puts cli_help

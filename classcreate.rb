@@ -61,6 +61,13 @@ def generate_class_scope(options={})
 EOF
 end
 
+def generate_template_class_scope_options
+  return {
+    functions: Array.new,
+    fields: Array.new
+  }
+end
+
 # Structure:
 # options = {
 #   name: *String, e.g. MyClass
@@ -335,4 +342,18 @@ def class_file_write(options={})
     body: class_data[:source],
     fileguard: false
   )
+end
+
+def generate_template_class_options
+  return {
+    name: nil,
+    namespace: Array.new,
+    use_struct: nil,
+    parents: Array.new,
+    private: generate_template_class_scope_options,
+    protected: generate_template_class_scope_options,
+    public: generate_template_class_scope_options,
+    project_includes: Array.new,
+    system_includes: Array.new
+  }
 end

@@ -17,7 +17,7 @@ cppgen <class|struct> <[namespaces::]name> [options]
 
 Options
 -p  --parents               Sets the parents for the the class
-                            <parent1:[scope]> [parent2:[scope]...]
+                            <parent1[:scope]> [parent2[:scope]...]
 
     --public                Sets all further parameters to be public
                             This is the default scope.
@@ -25,7 +25,7 @@ Options
     --private               Sets all further parameters to be private
 
 -f  --function              Creates a member function with the current scope
-                            <type:name[:param_type1:param_name1[,params...]]
+                            <type:name[:param_type1:param_name1[:default][,params...]]
                             Multiple functions can be specified
 
 -v  --variable              Creates a member variable with the current scope
@@ -54,15 +54,9 @@ end
 
 def help_arguments_parse(args)
   case args.first
-  when "class"
+  when "class", "struct"
     puts cli_class_help
-  when "struct"
-    puts cli_class_help
-  when "help"
-    puts cli_help_help
-  when "-h"
-    puts cli_help_help
-  when "--help"
+  when "help", "-h", "--help"
     puts cli_help_help
   when nil
     puts cli_help

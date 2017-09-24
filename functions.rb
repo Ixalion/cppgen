@@ -93,3 +93,12 @@ def build_function_header(options={})
 
   return "#{options[:type]} #{options[:name]}(#{paramstring});"
 end
+
+def generate_template_function_options
+  return {
+    type: nil,
+    name: nil,
+    params: Array.new,
+    build_doxygen: true
+  }
+end
