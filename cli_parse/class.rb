@@ -1,7 +1,7 @@
 require_relative "help"
 
-require_relative "../classcreate"
-require_relative "../functions"
+require_relative "../generator/classcreate"
+require_relative "../generator/functions"
 
 
 def parse_class_function(param)
