@@ -24,7 +24,7 @@ end
 # Structure:
 # See validate_function
 def build_function(options={})
-  options = validate_function(options)
+  options = validate_function(options.clone)
 
   paramlist = Array.new
 
@@ -74,7 +74,7 @@ end
 # Structure:
 # See validate_function
 def build_function_header(options={})
-  options = validate_function(options)
+  options = validate_function(options.clone)
 
   paramlist = Array.new
 
@@ -91,7 +91,5 @@ def build_function_header(options={})
 
   paramstring = paramlist.join(", ")
 
-  return <<-EOF
-#{options[:type]} #{options[:name]}(#{paramstring});
-EOF
+  return "#{options[:type]} #{options[:name]}(#{paramstring});"
 end

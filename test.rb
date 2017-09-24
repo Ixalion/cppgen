@@ -49,6 +49,11 @@ classcreate_options = {
       }
     ]
   },
+  protected: {
+    functions: [
+      function_options
+    ]
+  },
   public: {
     fields: [
       {
@@ -57,6 +62,8 @@ classcreate_options = {
       }
     ],
     functions: [
+      function_options,
+      function_options,
       function_options
     ]
   },
@@ -64,7 +71,7 @@ classcreate_options = {
   system_includes: ["myfile.hpp", "myother_file.hpp"]
 }
 
-klass = compose_class(classcreate_options)
+klass = compose_class(classcreate_options.clone)
+class_file_write(classcreate_options.clone)
 
-byebug
 puts "Complete"

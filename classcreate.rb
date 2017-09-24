@@ -5,6 +5,8 @@ require_relative "filecreate"
 require_relative "functions"
 require_relative "namespaces"
 
+require "byebug"
+
 # Structure:
 # options = {
 #   functions: Array -> Hash, # (For hash fields see build_function)
@@ -42,7 +44,7 @@ end
 # Structure:
 # See validate_class_scope_options
 def generate_class_scope(options={})
-  options = validate_class_scope_options(options)
+  options = validate_class_scope_options(options.clone)
 
   lines = Array.new
 
@@ -125,7 +127,7 @@ end
 # Structure:
 # See validate_class_options
 def compose_class_base_filename(options={})
-  options = validate_class_options(options)
+  options = validate_class_options(options.clone)
 
   return options[:name].underscore
 end
@@ -133,7 +135,7 @@ end
 # Structure:
 # See validate_class_options
 def compose_class_header(options={})
-  options = validate_class_options(options)
+  options = validate_class_options(options.clone)
 
   type = options[:use_struct] ? "struct" : "class"
 
@@ -158,7 +160,8 @@ def compose_class_header(options={})
   end
 
   if options[:namespace].any?
-    lines.push(build_namespace(options)[:header])
+    lines.push(build_namespace(options.clone)[:header])
+    lines.push("")
   end
 
   inheritance_string = ""
@@ -199,7 +202,8 @@ BLOCK
   lines.push("};")
 
   if options[:namespace].any?
-    lines.push(build_namespace(options)[:footer])
+    lines.push("")
+    lines.push(build_namespace(options.clone)[:footer])
   end
 
   return <<-EOF
@@ -210,12 +214,13 @@ end
 # Structure:
 # See validate_class_options
 def compose_class_source(options={})
-  options = validate_class_options(options)
+  options = validate_class_options(options.clone)
 
   lines = Array.new
 
   if options[:namespace].any?
-    lines.push(build_namespace(options)[:header])
+    lines.push(build_namespace(options.clone)[:header])
+    lines.push("")
   end
 
   if options[:private][:functions].any?
@@ -229,8 +234,8 @@ def compose_class_source(options={})
 COMMENT
 
     options[:private][:functions].each do |function|
-      temp_function = function
-      temp_function[:name] = "#{compose_namespace(options)}::function[:name]"
+      temp_function = function.clone
+      temp_function[:name] = "#{compose_namespace(options.clone)}::#{function[:name]}"
       lines.push(build_function(temp_function))
       lines.push("")
     end
@@ -249,8 +254,8 @@ COMMENT
 COMMENT
 
     options[:protected][:functions].each do |function|
-      temp_function = function
-      temp_function[:name] = "#{compose_namespace(options)}::function[:name]"
+      temp_function = function.clone
+      temp_function[:name] = "#{compose_namespace(options.clone)}::#{function[:name]}"
       lines.push(build_function(temp_function))
       lines.push("")
     end
@@ -269,8 +274,8 @@ COMMENT
 COMMENT
 
     options[:public][:functions].each do |function|
-      temp_function = function
-      temp_function[:name] = "#{compose_namespace(options)}::function[:name]"
+      temp_function = function.clone
+      temp_function[:name] = "#{compose_namespace(options.clone)}::#{function[:name]}"
       lines.push(build_function(temp_function))
       lines.push("")
     end
@@ -279,11 +284,11 @@ COMMENT
   end
 
   if options[:namespace].any?
-    lines.push(build_namespace(options)[:footer])
+    lines.push(build_namespace(options.clone)[:footer])
   end
 
   return <<-EOF
-#include "#{compose_class_base_filename(options)}.#{HEADER_FILE_EXTENSION}"
+#include "#{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
 
 #{lines.join("\n")}
 EOF
@@ -297,11 +302,11 @@ end
 #   source: String # The class's source file.
 # }
 def compose_class(options={})
-  options = validate_class_options(options)
+  options = validate_class_options(options.clone)
 
   return {
-    header: compose_class_header(options),
-    source: compose_class_source(options)
+    header: compose_class_header(options.clone),
+    source: compose_class_source(options.clone)
   }
 end
 
@@ -309,24 +314,24 @@ end
 # Structure:
 # See validate_class_options
 def class_file_write(options={})
-  options = validate_class_options(options)
+  options = validate_class_options(options.clone)
 
-  class_data = compose_class(options)
+  class_data = compose_class(options.clone)
 
   # The header file
-  header_filename = "#{compose_class_base_filename(options)}.#{HEADER_FILE_EXTENSION}"
+  header_filename = "#{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
   file_write(
     filename: header_filename,
-    directory: "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options))}",
+    directory: "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options.clone))}",
     body: class_data[:header],
     fileguard: true
   )
 
   # The source file
-  source_filename = "#{compose_class_base_filename(options)}.#{SOURCE_FILE_EXTENSION}"
+  source_filename = "#{compose_class_base_filename(options.clone)}.#{SOURCE_FILE_EXTENSION}"
   file_write(
     filename: source_filename,
-    directory: "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options))}",
+    directory: "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options.clone))}",
     body: class_data[:source],
     fileguard: false
   )

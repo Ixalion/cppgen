@@ -14,10 +14,12 @@ def validate_license_header(options={})
   options[:date] ||= Date.today
   options[:author] ||= `whoami`
   options[:user] ||= `id -F`
+
+  return options
 end
 
 def license_header(options={})
-  options = validate_license_header(options)
+  options = validate_license_header(options.clone)
 
 <<-EOF
 /*
@@ -89,7 +91,7 @@ def validate_compose_file(options={})
 
   options[:directory] ||= Dir.pwd
   options[:license_header] ||= Hash.new
-  options[:line_ending] ||= '\n'
+  options[:line_ending] ||= "\n"
 
   options[:license_header][:filename] ||= options[:filename]
 
@@ -99,11 +101,11 @@ end
 # Structure:
 # See validate_compose_file
 def compose_file(options={})
-  options = validate_compose_file(options)
+  options = validate_compose_file(options.clone)
 
   fileguard_data = Hash.new
   if options[:fileguard]
-    fileguard_data = fileguard_generate(options)
+    fileguard_data = fileguard_generate(options.clone)
   end
 
   lines = Array.new
@@ -145,7 +147,7 @@ end
 #
 # This function just wraps around compose_file
 def file_write(options={})
-  options = validate_compose_file(options)
+  options = validate_compose_file(options.clone)
 
   filepath = File.join(options[:directory], options[:filename])
 
@@ -153,5 +155,5 @@ def file_write(options={})
     FileUtils.mkdir_p(options[:directory])
   end
 
-  File.open(filepath, 'w') { |file| file.write(compose_file(options)) }
+  File.open(filepath, 'w') { |file| file.write(compose_file(options.clone)) }
 end
