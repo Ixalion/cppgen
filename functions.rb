@@ -15,6 +15,8 @@ def validate_function(options={})
   raise "function name is invalid '#{options[:name]}'" unless options[:name]
 
   options[:params] ||= Array.new
+
+  return options
 end
 
 # Structure:

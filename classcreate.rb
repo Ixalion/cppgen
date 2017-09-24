@@ -1,3 +1,5 @@
+require "helpers"
+
 require "filecreate"
 
 require "functions"
@@ -17,7 +19,7 @@ def validate_class_scope_options(options={})
 
   options[:functions].each_with_index do |function, index|
     begin
-      validate_function(function)
+      options[:functions][index] = validate_function(function)
     rescue => e
       message =  "validate_class_scope_options caught exception during function"
       message += " validation: '#{e}' at index ##{index}"
@@ -33,6 +35,8 @@ def validate_class_scope_options(options={})
       raise "validate_class_scope_options name must be present at index ##{index}"
     end
   end
+
+  return options
 end
 
 # Structure:
@@ -40,8 +44,18 @@ end
 def generate_class_scope(options={})
   options = validate_class_scope_options(options)
 
-  return <<-EOF
+  lines = Array.new
 
+  options[:fields].each do |field|
+    lines.push("#{field[:type]} #{field[:name]};")
+  end
+
+  options[:functions].each do |function|
+    lines.push(build_function_header(function))
+  end
+
+  return <<-EOF
+#{lines.join("\n")}
 EOF
 end
 
@@ -55,28 +69,65 @@ end
 #     name: *String, # e.g. MyParentClass
 #   },
 #   private: Hash, # (For hash fields see generate_class_scope)
+#   protected: Hash, # (For hash fields see generate_class_scope)
 #   public: Hash, # (For hash fields see generate_class_scope)
-#   public: Hash, # (For hash fields see generate_class_scope)
+#   project_includes: Array -> String, # e.g. my_other_header.h
+#   system_includes: Array -> String # e.g. iostream
 # }
 def validate_class_options(options={})
   raise "validate_class_options name must be present" unless options[:name]
 
   options[:namespace] ||= Array.new
+
+  options[:project_includes] ||= Array.new
+  options[:system_includes] ||= Array.new
+
   options[:parents] ||= Array.new
+  options.parents.each_with_index do |parent, index|
+    unless parent[:name]
+      raise "validate_class_options parents name must be present at index ##{index}"
+    end
 
-  options[:private] ||= Hash.new
-  options[:private][:functions] ||= Array.new
-  options[:private][:fields] ||= Array.new
+    options[:parents][index] ||= "public"
+  end
 
-  options[:protected] ||= Hash.new
-  options[:protected][:functions] ||= Array.new
-  options[:protected][:fields] ||= Array.new
+  begin
+    options[:private] ||= Hash.new
+    options[:private] = validate_class_scope_options(options[:private])
+  rescue => e
+    message =  "validate_class_options caught exception during private"
+    message += " validation: '#{e}'"
+    raise message
+  end
 
-  options[:public] ||= Hash.new
-  options[:public][:functions] ||= Array.new
-  options[:public][:fields] ||= Array.new
+  begin
+    options[:protected] ||= Hash.new
+    options[:protected] = validate_class_scope_options(options[:protected])
+  rescue => e
+    message =  "validate_class_options caught exception during protected"
+    message += " validation: '#{e}'"
+    raise message
+  end
+
+  begin
+    options[:public] ||= Hash.new
+    options[:public] = validate_class_scope_options(options[:public])
+  rescue => e
+    message =  "validate_class_options caught exception during public"
+    message += " validation: '#{e}'"
+    raise message
+  end
 
   return options
+end
+
+
+# Structure:
+# See validate_class_options
+def compose_class_base_filename(options={})
+  options = validate_class_options(options)
+
+  return options[:name].underscore
 end
 
 # Structure:
@@ -86,13 +137,70 @@ def compose_class_header(options={})
 
   type = options[:use_struct] ? "struct" : "class"
 
-  return <<-EOF
-#{type} #{option[:name]}#{} {
+  lines = Array.new
 
+  if options[:system_includes].any?
+    system_includes = options[:system_includes].map do |system_include|
+      "#include <#{system_include}>"
+    end
+    system_includes.push("")
+
+    lines.concat(system_includes)
+  end
+
+  if options[:project_includes].any?
+    project_includes = options[:project_includes].map do |project_include|
+      "#include \"#{project_include}\""
+    end
+    project_includes.push("")
+
+    lines.concat(project_includes)
+  end
+
+  if options[:namespaces].any?
+    lines.push(build_namespace(options)[:header])
+  end
+
+  if options[:parents].any?
+    inheritances = Array.new
+
+    options.parents.each do |parent|
+      inheritances.push("#{parent[:scope]} #{parent[:name]}")
+    end
+
+    lines.push(": #{inheritances.join(", ")}")
+  end
+
+  lines.push("#{type} #{option[:name]}#{inheritance_string} {")
+
+  if options[:private][:functions].any? || options[:private][:fields].any?
+    lines.push <<-BLOCK
 private:
+#{generate_class_scope(options[:private]).indent(2)}
+BLOCK
+  end
 
+  if options[:protected][:functions].any? || options[:protected][:fields].any?
+    lines.push <<-BLOCK
+protected:
+#{generate_class_scope(options[:protected]).indent(2)}
+BLOCK
+  end
+
+  if options[:public][:functions].any? || options[:public][:fields].any?
+    lines.push <<-BLOCK
 public:
-}
+#{generate_class_scope(options[:public]).indent(2)}
+BLOCK
+  end
+
+  if options[:namespaces].any?
+    lines.push(build_namespace(options)[:footer])
+  end
+
+  return <<-EOF
+#{lines.join("\n")}
+};
 EOF
 end
 
@@ -101,6 +209,81 @@ end
 def compose_class_source(options={})
   options = validate_class_options(options)
 
+  lines = Array.new
+
+  if options[:namespaces].any?
+    lines.push(build_namespace(options)[:header])
+  end
+
+  if options[:private][:functions].any?
+    lines.push <<-COMMENT
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                      Private Function Implementation                       //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+COMMENT
+
+    options[:private][:functions].each do |function|
+      temp_function = function
+      temp_function[:name] = "#{compose_namespace(options)}::function[:name]"
+      lines.push(build_function(temp_function))
+      lines.push("")
+    end
+
+    lines.push("")
+  end
+
+  if options[:protected][:functions].any?
+    lines.push <<-COMMENT
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                     Protected Function Implementation                      //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+COMMENT
+
+    options[:protected][:functions].each do |function|
+      temp_function = function
+      temp_function[:name] = "#{compose_namespace(options)}::function[:name]"
+      lines.push(build_function(temp_function))
+      lines.push("")
+    end
+
+    lines.push("")
+  end
+
+  if options[:public][:functions].any?
+    lines.push <<-COMMENT
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                       Public Function Implementation                       //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+COMMENT
+
+    options[:public][:functions].each do |function|
+      temp_function = function
+      temp_function[:name] = "#{compose_namespace(options)}::function[:name]"
+      lines.push(build_function(temp_function))
+      lines.push("")
+    end
+
+    lines.push("")
+  end
+
+  if options[:namespaces].any?
+    lines.push(build_namespace(options)[:footer])
+  end
+
+  return <<-EOF
+#include "#{compose_class_base_filename}.#{HEADER_FILE_EXTENSION}"
+
+#{lines.join("\n")}
+EOF
 end
 
 # Structure:
@@ -117,4 +300,31 @@ def compose_class(options={})
     header: compose_class_header(options),
     source: compose_class_source(options)
   }
+end
+
+
+# Structure:
+# See validate_class_options
+def class_file_write(options={})
+  options = validate_class_options(options)
+
+  class_data = compose_class(options)
+
+  # The header file
+  header_filename = "#{compose_class_base_filename(options)}.#{HEADER_FILE_EXTENSION}"
+  file_write(
+    filename: header_filename,
+    directory: "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options))}",
+    body: class_data[:header],
+    fileguard: true
+  )
+
+  # The source file
+  source_filename = "#{compose_class_base_filename(options)}.#{SOURCE_FILE_EXTENSION}"
+  file_write(
+    filename: source_filename,
+    directory: "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options))}",
+    body: class_data[:source],
+    fileguard: false
+  )
 end

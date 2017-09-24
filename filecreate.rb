@@ -1,7 +1,6 @@
 require "date"
 require 'fileutils'
 
-
 # Structure:
 # options = {
 #   filename: *String, # e.g. MyFile.cpp
@@ -9,12 +8,17 @@ require 'fileutils'
 #   author: String, # e.g. username, defaults to: `whoami`
 #   user: String, # e.g. FirstName LastName, defaults to: `id -F`
 # }
-def license_header(options={})
-  raise "license_header filename must be present" unless options[:filename]
+def validate_license_header(options={})
+  raise "validate_license_header filename must be present" unless options[:filename]
 
   options[:date] ||= Date.today
   options[:author] ||= `whoami`
   options[:user] ||= `id -F`
+end
+
+def license_header(options={})
+  options = validate_license_header(options)
+
 <<-EOF
 /*
  * #{options[:filename]}
@@ -77,12 +81,25 @@ end
 #   fileguard: Boolean, # defaults to: nil,
 #   line_ending: String, # e.g. '\n', defaults to: '\n'
 # }
-def file_compose(options={})
-  raise "file_compose filename must be present" unless options[:filename]
+#
+# If license_header -> filename is not set, then it will be set to the value
+# within options[:filename]
+def validate_compose_file(options={})
+  raise "validate_compose_file filename must be present" unless options[:filename]
 
   options[:directory] ||= Dir.pwd
   options[:license_header] ||= Hash.new
   options[:line_ending] ||= '\n'
+
+  options[:license_header][:filename] ||= options[:filename]
+
+  return options
+end
+
+# Structure:
+# See validate_compose_file
+def compose_file(options={})
+  options = validate_compose_file(options)
 
   fileguard_data = Hash.new
   if options[:fileguard]
@@ -124,13 +141,11 @@ EOF
 end
 
 # Structure:
-# See file_compose
+# See validate_compose_file
 #
-# This function just wraps around file_compose
+# This function just wraps around compose_file
 def file_write(options={})
-  raise "file_write filename must be present" unless options[:filename]
-
-  options[:directory] ||= Dir.pwd
+  options = validate_compose_file(options)
 
   filepath = File.join(options[:directory], options[:filename])
 
@@ -138,5 +153,5 @@ def file_write(options={})
     FileUtils.mkdir_p(options[:directory])
   end
 
-  File.open(filepath, 'w') { |file| file.write(file_compose(options)) }
+  File.open(filepath, 'w') { |file| file.write(compose_file(options)) }
 end
