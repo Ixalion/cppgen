@@ -9,17 +9,17 @@ def parse_class_function(param)
 
   array = param.split(":")
 
-  options[:type] = array.first
-  options[:name] = array.second
+  options[:type] = array[0]
+  options[:name] = array[1]
 
   param_array = array.slice(2..-1).join(":").split(",")
 
   param_array.each do |param|
     fields = param.split(":")
     options[:params].push({
-      type: fields.first,
-      name: fields.second,
-      default: fields.third
+      type: fields[0],
+      name: fields[1],
+      default: fields[2]
     })
   end
 
@@ -30,8 +30,8 @@ def parse_class_variable(param)
   array = param.split(":")
 
   return {
-    type: array.first,
-    name: array.second
+    type: array[0],
+    name: array[1]
   }
 end
 
@@ -39,8 +39,8 @@ def parse_class_parent(param)
   array = param.split(":")
 
   return {
-    name: array.first,
-    scope: array.second
+    name: array[0],
+    scope: array[1]
   }
 end
 
@@ -116,15 +116,18 @@ def class_arguments_parse(args, use_struct)
   if simulate
     klass = compose_class(options)
 
-    header_filename = "// #{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
-    puts header_filename
+    header_filename = "#{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
+    header_directory = "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
+    puts "// #{File.join(header_directory,header_filename)}"
     puts klass[:header]
 
 
     puts ""
     puts ""
     puts ""
-    puts "// #{compose_class_base_filename(options.clone)}.#{SOURCE_FILE_EXTENSION}"
+    source_filename = "#{compose_class_base_filename(options.clone)}.#{SOURCE_FILE_EXTENSION}"
+    source_directory = "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
+    puts "// #{File.join(source_directory, source_filename)}"
     puts klass[:source]
   else
     class_file_write(options)

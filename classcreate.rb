@@ -5,8 +5,6 @@ require_relative "filecreate"
 require_relative "functions"
 require_relative "namespaces"
 
-require "byebug"
-
 # Structure:
 # options = {
 #   functions: Array -> Hash, # (For hash fields see build_function)
@@ -327,18 +325,20 @@ def class_file_write(options={})
 
   # The header file
   header_filename = "#{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
+  header_directory = "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
   file_write(
     filename: header_filename,
-    directory: "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options.clone))}",
+    directory: header_directory,
     body: class_data[:header],
     fileguard: true
   )
 
   # The source file
   source_filename = "#{compose_class_base_filename(options.clone)}.#{SOURCE_FILE_EXTENSION}"
+  source_directory = "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
   file_write(
     filename: source_filename,
-    directory: "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options.clone))}",
+    directory: source_directory,
     body: class_data[:source],
     fileguard: false
   )

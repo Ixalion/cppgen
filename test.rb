@@ -1,7 +1,5 @@
 require_relative "classcreate"
 
-require "byebug"
-
 function_options = {
   type: "void",
   name: "myCoolFunction",
