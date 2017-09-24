@@ -1,3 +1,4 @@
+
 # Structure:
 # options = {
 #   type: *String, # e.g. int
@@ -9,11 +10,17 @@
 #   },
 #   build_doxygen: Boolean # defaults to: true
 # }
-def build_function(options={})
+def validate_function(options={})
   raise "function type is invalid '#{options[:type]}'" unless options[:type]
   raise "function name is invalid '#{options[:name]}'" unless options[:name]
 
   options[:params] ||= Array.new
+end
+
+# Structure:
+# See validate_function
+def build_function(options={})
+  options = validate_function(options)
 
   paramlist = Array.new
 
@@ -35,7 +42,7 @@ def build_function(options={})
       " * @param #{param[:name]}"
     end
 
-    doxy_params.push(" * @return")
+    doxy_params.push(" * @return") unless options[:type] == "void"
 
     doxygen_comment = <<-COMMENT
 /**
@@ -62,13 +69,9 @@ end
 
 
 # Structure:
-# See build_function
+# See validate_function
 def build_function_header(options={})
-
-  raise "function type is invalid '#{options[:type]}'" unless options[:type]
-  raise "function name is invalid '#{options[:name]}'" unless options[:name]
-
-  options[:params] ||= Array.new
+  options = validate_function(options)
 
   paramlist = Array.new
 
@@ -88,32 +91,4 @@ def build_function_header(options={})
   return <<-EOF
 #{options[:type]} #{options[:name]}(#{paramstring});
 EOF
-end
-
-# Structure:
-# options = {
-#   namespace: Array -> String # e.g. ["ix", "ai"],
-#   line_ending: String, # e.g. '\n', defaults to: '\n'
-# }
-#
-# return = {
-#   header: String, # The namespace's header.
-#   footer: String # The namespace's footer.
-# }
-def build_namespace(options)
-  options[:namespace] ||= Array.new
-  options[:line_ending] ||= "\n"
-
-  header = options[:namespace].map do |namespace|
-    "namespace #{namespace} {"
-  end.join(options[:line_ending])
-
-  footer = options[:namespace].map do |namespace|
-    "} /* namespace #{namespace} */"
-  end.join(options[:line_ending])
-
-  return {
-    header: header,
-    footer: footer
-  }
 end
