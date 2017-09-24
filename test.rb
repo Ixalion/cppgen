@@ -1,4 +1,6 @@
-require "classcreate"
+require_relative "classcreate"
+
+require "byebug"
 
 function_options = {
   type: "void",
@@ -6,16 +8,16 @@ function_options = {
   params: [
     {
       type: "int",
-      Name: "intparam",
+      name: "intparam",
     },
     {
       type: "float *",
-      Name: "float_p",
+      name: "float_p",
       default: "nullptr",
     },
     {
       type: "long double",
-      Name: "double_big",
+      name: "double_big",
       default: 0.234,
     }
   ],
@@ -23,8 +25,8 @@ function_options = {
 }
 
 classcreate_options = {
-  name: "MyClass"
-  namespace: ["ix", "test", "bahh"]
+  name: "MyClass",
+  namespace: ["ix", "test", "bahh"],
   use_struct: true,
   parents: [
     {
@@ -58,6 +60,11 @@ classcreate_options = {
       function_options
     ]
   },
-  project_includes: ["iostream"]
+  project_includes: ["iostream"],
   system_includes: ["myfile.hpp", "myother_file.hpp"]
 }
+
+klass = compose_class(classcreate_options)
+
+byebug
+puts "Complete"

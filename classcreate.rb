@@ -1,9 +1,9 @@
-require "helpers"
+require_relative "helpers"
 
-require "filecreate"
+require_relative "filecreate"
 
-require "functions"
-require "namespaces"
+require_relative "functions"
+require_relative "namespaces"
 
 # Structure:
 # options = {
@@ -75,7 +75,7 @@ end
 #   system_includes: Array -> String # e.g. iostream
 # }
 def validate_class_options(options={})
-  raise "validate_class_options name must be present" unless options[:name]
+  raise "validate_class_options name must be present options: '#{options.inspect}'" unless options[:name]
 
   options[:namespace] ||= Array.new
 
@@ -83,12 +83,12 @@ def validate_class_options(options={})
   options[:system_includes] ||= Array.new
 
   options[:parents] ||= Array.new
-  options.parents.each_with_index do |parent, index|
+  options[:parents].each_with_index do |parent, index|
     unless parent[:name]
       raise "validate_class_options parents name must be present at index ##{index}"
     end
 
-    options[:parents][index] ||= "public"
+    options[:parents][index][:scope] ||= "public"
   end
 
   begin
@@ -157,21 +157,23 @@ def compose_class_header(options={})
     lines.concat(project_includes)
   end
 
-  if options[:namespaces].any?
+  if options[:namespace].any?
     lines.push(build_namespace(options)[:header])
   end
+
+  inheritance_string = ""
 
   if options[:parents].any?
     inheritances = Array.new
 
-    options.parents.each do |parent|
+    options[:parents].each do |parent|
       inheritances.push("#{parent[:scope]} #{parent[:name]}")
     end
 
-    lines.push(": #{inheritances.join(", ")}")
+    inheritance_string = ": #{inheritances.join(", ")}"
   end
 
-  lines.push("#{type} #{option[:name]}#{inheritance_string} {")
+  lines.push("#{type} #{options[:name]}#{inheritance_string} {")
 
   if options[:private][:functions].any? || options[:private][:fields].any?
     lines.push <<-BLOCK
@@ -194,13 +196,14 @@ public:
 BLOCK
   end
 
-  if options[:namespaces].any?
+  lines.push("};")
+
+  if options[:namespace].any?
     lines.push(build_namespace(options)[:footer])
   end
 
   return <<-EOF
 #{lines.join("\n")}
-};
 EOF
 end
 
@@ -211,7 +214,7 @@ def compose_class_source(options={})
 
   lines = Array.new
 
-  if options[:namespaces].any?
+  if options[:namespace].any?
     lines.push(build_namespace(options)[:header])
   end
 
@@ -275,12 +278,12 @@ COMMENT
     lines.push("")
   end
 
-  if options[:namespaces].any?
+  if options[:namespace].any?
     lines.push(build_namespace(options)[:footer])
   end
 
   return <<-EOF
-#include "#{compose_class_base_filename}.#{HEADER_FILE_EXTENSION}"
+#include "#{compose_class_base_filename(options)}.#{HEADER_FILE_EXTENSION}"
 
 #{lines.join("\n")}
 EOF

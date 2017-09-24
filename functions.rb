@@ -5,7 +5,7 @@
 #   name: *String, # e.g. myFunction
 #   params: Array -> Hash {
 #     type: *String, # e.g. int
-#     Name: *String, # e.g. myParam
+#     name: *String, # e.g. myParam
 #     default: String, # Can be nil
 #   },
 #   build_doxygen: Boolean # defaults to: true
@@ -15,6 +15,8 @@ def validate_function(options={})
   raise "function name is invalid '#{options[:name]}'" unless options[:name]
 
   options[:params] ||= Array.new
+
+  # TODO: Add a validation of the params.
 
   return options
 end
@@ -26,7 +28,7 @@ def build_function(options={})
 
   paramlist = Array.new
 
-  options.params.each_with_index do |param, index|
+  options[:params].each_with_index do |param, index|
     raise "param '#{param}' at index ##{index} has an invalid type" unless param[:type]
     raise "param '#{param}' at index ##{index} has an invalid name" unless param[:name]
 
@@ -55,8 +57,7 @@ def build_function(options={})
 COMMENT
 
     return <<-EOF
-#{doxygen_comment}
-#{options[:type]} #{options[:name]}(#{paramstring}) {
+#{doxygen_comment}#{options[:type]} #{options[:name]}(#{paramstring}) {
   // TODO: Implement me.
 }
 EOF
@@ -77,7 +78,7 @@ def build_function_header(options={})
 
   paramlist = Array.new
 
-  options.params.each_with_index do |param, index|
+  options[:params].each_with_index do |param, index|
     raise "param '#{param}' at index ##{index} has an invalid type" unless param[:type]
     raise "param '#{param}' at index ##{index} has an invalid name" unless param[:name]
 
