@@ -15,7 +15,7 @@ def build_function(options={})
   raise "function type is invalid '#{options[:type]}'" unless options[:type]
   raise "function name is invalid '#{options[:name]}'" unless options[:name]
 
-  options.params ||= Array.new
+  options[:params] ||= Array.new
 
   paramlist = Array.new
 
@@ -30,5 +30,11 @@ def build_function(options={})
     paramlist.push(paramstring)
   end
 
+  paramstring = paramlist.join(", ")
 
+<<-EOF
+#{options[:type]} #{options[:name]}(#{paramstring}) {
+  // TODO: Implement me.
+}
+EOF
 end
