@@ -18,7 +18,7 @@ def parse_class_function(param)
     fields = param.split(":")
     options[:params].push({
       type: fields.first,
-      name: fields,second,
+      name: fields.second,
       default: fields.third
     })
   end
@@ -53,6 +53,9 @@ def class_arguments_parse(args, use_struct)
     puts "name must not be blank"
     puts cli_class_help
     exit(1)
+  elsif ["-h", "--help"].include? rawname
+    puts cli_class_help
+    exit(0)
   end
 
   options[:name] = rawname.split("::").last
