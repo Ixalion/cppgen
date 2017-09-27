@@ -26,13 +26,13 @@ def license_header(options={})
  * #{options[:filename]}
  *
  *  Created on: #{options[:date].strftime("%b %e, %Y")}
- *      Author: #{options[:author]}
+ *      Author: #{options[:author].strip}
  *
  * Copyright (C) #{options[:date].year} #{options[:user]}
  * ALL RIGHTS RESERVED
  * THE CONTENTS OF THIS FILE ARE CONFIDENTIAL
  * DO NOT DISTRIBUTE
- */
+**/
 EOF
 end
 
@@ -167,6 +167,6 @@ def generate_template_file_options
     body: nil,
     footer: nil,
     fileguard: nil,
-    line_ending: '\n'
+    line_ending: "\n"
   }
 end
