@@ -6,6 +6,8 @@ Subcommands
 c   class                   Generates a class.
     struct                  Generates a struct.
 
+f   file                    Generates a source file.
+
 h   help                    Prints the help page for the specied module.
                             cppgen help <module_name>
 EOF
@@ -51,11 +53,29 @@ cppgen help <module_name>
 EOF
 end
 
+def cli_file_help
+<<-EOF
+cppgen file <path> [options]
+
+Options
+-f  --fileguard             Specifies that the #ifndef file guard should be
+                            added to the file.
+
+    --simulate              Does not create any files, will just print
+                            everything to the console
+
+-h  --help                  Print this help screen
+                            Must be the first and only parameter
+EOF
+end
+
 
 def help_arguments_parse(args)
   case args.first
   when "class", "struct"
     puts cli_class_help
+  when "file"
+    puts cli_file_help
   when "help", "-h", "--help"
     puts cli_help_help
   when nil

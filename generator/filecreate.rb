@@ -81,7 +81,7 @@ end
 #   body: String, # Contents within the file.
 #   footer: String, # Conents at the end of the file.
 #   fileguard: Boolean, # defaults to: nil,
-#   line_ending: String, # e.g. '\n', defaults to: '\n'
+#   line_ending: String # e.g. '\n', defaults to: '\n'
 # }
 #
 # If license_header -> filename is not set, then it will be set to the value
@@ -156,4 +156,17 @@ def file_write(options={})
   end
 
   File.open(filepath, 'w') { |file| file.write(compose_file(options.clone)) }
+end
+
+def generate_template_file_options
+  return {
+    filename: nil,
+    directory: Dir.pwd,
+    license_header: Hash.new,
+    header: nil,
+    body: nil,
+    footer: nil,
+    fileguard: nil,
+    line_ending: '\n'
+  }
 end
