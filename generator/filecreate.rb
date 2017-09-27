@@ -6,14 +6,14 @@ require 'fileutils'
 #   filename: *String, # e.g. MyFile.cpp
 #   date: Date, # e.g. Date.today, defaults to Date.today
 #   author: String, # e.g. username, defaults to: `whoami`
-#   user: String, # e.g. FirstName LastName, defaults to: `id -F`
+#   user: String, # e.g. FirstName LastName, defaults to: 'Christopher Britt'
 # }
 def validate_license_header(options={})
   raise "validate_license_header filename must be present" unless options[:filename]
 
   options[:date] ||= Date.today
   options[:author] ||= `whoami`
-  options[:user] ||= `id -F`
+  options[:user] ||= 'Christopher Britt'
 
   return options
 end
