@@ -35,6 +35,8 @@ def file_arguments_parse(args)
       exit(0)
     when "-f", "--function"
       options[:fileguard] = true
+    when "--ruby-gen"
+      options[:ruby_generator] = true
     when "--simulate"
       simulate = true
     else

@@ -61,6 +61,8 @@ Options
 -f  --fileguard             Specifies that the #ifndef file guard should be
                             added to the file.
 
+    --ruby-gen              Creates the file to be run using the ruby generator
+
     --simulate              Does not create any files, will just print
                             everything to the console
 

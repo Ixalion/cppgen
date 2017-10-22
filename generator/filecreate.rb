@@ -36,6 +36,21 @@ def license_header(options={})
 EOF
 end
 
+def ruby_generator_license_header(options={})
+  options = validate_license_header(options.clone)
+
+<<-EOF
+# #{options[:filename]}.rgen
+#
+#  Created on: #{options[:date].strftime("%b %e, %Y")}
+#      Author: #{options[:author].strip}
+#
+# Copyright (C) #{options[:date].year} #{options[:user]}
+# ALL RIGHTS RESERVED
+# THE CONTENTS OF THIS FILE ARE CONFIDENTIAL
+# DO NOT DISTRIBUTE
+EOF
+end
 # Structure:
 # options = {
 #   filename: *String, # e.g. MyFile.cpp,
@@ -73,6 +88,31 @@ EOF
 end
 
 # Structure:
+# options = Hash, # See validate_compose_file
+# return = {
+#   header: String, # The start of the file for ruby generator
+#   footer: String # The end of the file for ruby generator
+# }
+def ruby_generator_generate(options={})
+  header = <<-RUBY_GENERATOR_BLOCK
+#{ruby_generator_license_header(options[:license_header])}
+
+file = <<-RUBY_GENERATOR_EOF
+RUBY_GENERATOR_BLOCK
+
+  footer = <<-RUBY_GENERATOR_BLOCK
+RUBY_GENERATOR_EOF
+
+open("\#{File.basename(__FILE__,'.*').join('.hpp')}","w"){|f| f.write(file)}
+RUBY_GENERATOR_BLOCK
+
+  return {
+    header: header,
+    footer: footer
+  }
+end
+
+# Structure:
 # options = {
 #   filename: *String, # e.g. MyFile.cpp,
 #   directory: String, # e.g. Dir.pwd, defaults to: Dir.pwd
@@ -81,7 +121,8 @@ end
 #   body: String, # Contents within the file.
 #   footer: String, # Conents at the end of the file.
 #   fileguard: Boolean, # defaults to: nil,
-#   line_ending: String # e.g. '\n', defaults to: '\n'
+#   line_ending: String, # e.g. '\n', defaults to: '\n'
+#   ruby_generator: Boolean # defaults to: false
 # }
 #
 # If license_header -> filename is not set, then it will be set to the value
@@ -108,7 +149,16 @@ def compose_file(options={})
     fileguard_data = fileguard_generate(options.clone)
   end
 
+  ruby_generator_data = Hash.new
+  if options[:ruby_generator]
+    ruby_generator_data = ruby_generator_generate(options.clone)
+  end
+
   lines = Array.new
+  if ruby_generator_data[:header]
+    lines.push(ruby_generator_data[:header])
+    lines.push("")
+  end
 
   lines.push(license_header(options[:license_header]))
 
@@ -135,6 +185,11 @@ def compose_file(options={})
   if fileguard_data[:footer]
     lines.push("")
     lines.push(fileguard_data[:footer])
+  end
+
+  if ruby_generator_data[:footer]
+    lines.push("")
+    lines.push(ruby_generator_data[:footer])
   end
 
   return <<-EOF
@@ -167,6 +222,7 @@ def generate_template_file_options
     body: nil,
     footer: nil,
     fileguard: nil,
-    line_ending: "\n"
+    line_ending: "\n",
+    ruby_generator: false
   }
 end
