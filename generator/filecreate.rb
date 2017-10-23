@@ -103,7 +103,7 @@ RUBY_GENERATOR_BLOCK
   footer = <<-RUBY_GENERATOR_BLOCK
 RUBY_GENERATOR_EOF
 
-open("\#{File.basename(__FILE__,'.*').join('.hpp')}","w"){|f| f.write(file)}
+open("\#{File.join(File.dirname(__FILE__),File.basename(__FILE__,".*"))}","w"){|f| f.write(file)}
 RUBY_GENERATOR_BLOCK
 
   return {
