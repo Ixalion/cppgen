@@ -39,6 +39,8 @@ Options
     --project-includes      Sets the system includes for the class
                             <file1> [file2...]
 
+-r  --ruby-gen              Generates all of the files as ruby-gen files.
+
     --simulate              Does not create any files, will just print
                             everything to the console
 

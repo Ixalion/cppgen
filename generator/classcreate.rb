@@ -79,7 +79,8 @@ end
 #   protected: Hash, # (For hash fields see generate_class_scope)
 #   public: Hash, # (For hash fields see generate_class_scope)
 #   project_includes: Array -> String, # e.g. my_other_header.h
-#   system_includes: Array -> String # e.g. iostream
+#   system_includes: Array -> String, # e.g. iostream
+#   ruby_generator: Boolean # defaults to false
 # }
 def validate_class_options(options={})
   raise "validate_class_options name must be present options: '#{options.inspect}'" unless options[:name]
@@ -88,6 +89,8 @@ def validate_class_options(options={})
 
   options[:project_includes] ||= Array.new
   options[:system_includes] ||= Array.new
+
+  options[:ruby_generator] ||= false
 
   options[:parents] ||= Array.new
   options[:parents].each_with_index do |parent, index|
@@ -330,7 +333,8 @@ def class_file_write(options={})
     filename: header_filename,
     directory: header_directory,
     body: class_data[:header],
-    fileguard: true
+    fileguard: true,
+    ruby_generator: options[:ruby_generator]
   )
 
   # The source file
@@ -340,7 +344,8 @@ def class_file_write(options={})
     filename: source_filename,
     directory: source_directory,
     body: class_data[:source],
-    fileguard: false
+    fileguard: false,
+    ruby_generator: options[:ruby_generator]
   )
 end
 
@@ -354,6 +359,7 @@ def generate_template_class_options
     protected: generate_template_class_scope_options,
     public: generate_template_class_scope_options,
     project_includes: Array.new,
-    system_includes: Array.new
+    system_includes: Array.new,
+    ruby_generator: false
   }
 end

@@ -206,6 +206,10 @@ def file_write(options={})
 
   filepath = File.join(options[:directory], options[:filename])
 
+  if options[:ruby_generator]
+    filepath = File.join(File.dirname(filepath), File.basename(filepath, ".rgen") + ".rgen")
+  end
+
   unless File.directory?(options[:directory])
     FileUtils.mkdir_p(options[:directory])
   end

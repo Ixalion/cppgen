@@ -93,6 +93,8 @@ def class_arguments_parse(args, use_struct)
       current_mode = :system_includes
     when "--project-includes"
       current_mode = :project_includes
+    when "-r", "--ruby-gen"
+      options[:ruby_generator] = true
     when "--simulate"
       simulate = true
     else
