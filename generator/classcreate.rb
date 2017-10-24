@@ -238,12 +238,12 @@ def compose_class_source(options={})
 //                      Private Function Implementation                       //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-
 COMMENT
+    lines.push("")
 
     options[:private][:functions].each do |function|
       temp_function = function.clone
-      temp_function[:name] = "#{compose_namespace(options.clone)}::#{function[:name]}"
+      temp_function[:name] = "#{options[:name]}::#{function[:name]}"
       lines.push(build_function(temp_function))
       lines.push("")
     end
@@ -258,12 +258,12 @@ COMMENT
 //                     Protected Function Implementation                      //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-
 COMMENT
+    lines.push("")
 
     options[:protected][:functions].each do |function|
       temp_function = function.clone
-      temp_function[:name] = "#{compose_namespace(options.clone)}::#{function[:name]}"
+      temp_function[:name] = "#{options[:name]}::#{function[:name]}"
       lines.push(build_function(temp_function))
       lines.push("")
     end
@@ -278,12 +278,12 @@ COMMENT
 //                       Public Function Implementation                       //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-
 COMMENT
+    lines.push("")
 
     options[:public][:functions].each do |function|
       temp_function = function.clone
-      temp_function[:name] = "#{compose_namespace(options.clone)}::#{function[:name]}"
+      temp_function[:name] = "#{options[:name]}::#{function[:name]}"
       lines.push(build_function(temp_function))
       lines.push("")
     end
@@ -298,7 +298,7 @@ COMMENT
   return <<-EOF
 #include "#{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
 
-#{lines.join("\n")}
+#{lines.map(&:rstrip).join("\n")}
 EOF
 end
 

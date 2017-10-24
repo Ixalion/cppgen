@@ -24,15 +24,17 @@ end
 def license_header(options={})
   options = validate_license_header(options.clone)
 
-  timestamp = options[:ruby_generator] ?
-  "Generated on: \#{Date.today.strftime(\"%b %e, %Y\")}" :
-  "Created on: #{options[:date].strftime("%b %e, %Y")}"
+  timestamp = options[:ruby_generator] ? <<-EOF
+ *  Rgen created on: #{options[:date].strftime("%b %e, %Y")}
+ *  Generated on: \#{Date.today.strftime(\"%b %e, %Y\")}"
+EOF
+  : " *  Created on: #{options[:date].strftime("%b %e, %Y")}"
 
 <<-EOF
 /*
  * #{options[:filename]}
  *
- *  #{timestamp}
+#{timestamp.rstrip}
  *      Author: #{options[:author].strip}
  *
  * Copyright (C) #{options[:date].year} #{options[:user]}
@@ -102,15 +104,13 @@ end
 # }
 def ruby_generator_generate(options={})
   header = <<-RUBY_GENERATOR_BLOCK
-#{ruby_generator_license_header(options[:license_header])}
-
 file = <<-RUBY_GENERATOR_EOF
 RUBY_GENERATOR_BLOCK
 
   footer = <<-RUBY_GENERATOR_BLOCK
 RUBY_GENERATOR_EOF
 
-open("\#{File.join(File.dirname(__FILE__),File.basename(__FILE__,".*"))}","w"){|f| f.write(file)}
+open("\#{File.join(File.dirname(__FILE__),File.basename(__FILE__,".rgen"))}","w"){|f| f.write(file)}
 RUBY_GENERATOR_BLOCK
 
   return {
@@ -199,7 +199,7 @@ def compose_file(options={})
   end
 
   return <<-EOF
-#{lines.map(&:strip).join(options[:line_ending])}
+#{lines.map(&:rstrip).join(options[:line_ending])}
 EOF
 end
 
