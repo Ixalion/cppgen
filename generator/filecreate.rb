@@ -7,6 +7,7 @@ require 'fileutils'
 #   date: Date, # e.g. Date.today, defaults to Date.today
 #   author: String, # e.g. username, defaults to: `whoami`
 #   user: String, # e.g. FirstName LastName, defaults to: 'Christopher Britt'
+#   ruby_generator: Boolean # defaults to: false
 # }
 def validate_license_header(options={})
   raise "validate_license_header filename must be present" unless options[:filename]
@@ -15,17 +16,23 @@ def validate_license_header(options={})
   options[:author] ||= `whoami`
   options[:user] ||= 'Christopher Britt'
 
+  options[:ruby_generator] ||= false
+
   return options
 end
 
 def license_header(options={})
   options = validate_license_header(options.clone)
 
+  timestamp = options[:ruby_generator] ?
+  "Generated on: \#{Date.today.strftime(\"%b %e, %Y\")}" :
+  "Created on: #{options[:date].strftime("%b %e, %Y")}"
+
 <<-EOF
 /*
  * #{options[:filename]}
  *
- *  Created on: #{options[:date].strftime("%b %e, %Y")}
+ *  #{timestamp}
  *      Author: #{options[:author].strip}
  *
  * Copyright (C) #{options[:date].year} #{options[:user]}
@@ -135,6 +142,7 @@ def validate_compose_file(options={})
   options[:line_ending] ||= "\n"
 
   options[:license_header][:filename] ||= options[:filename]
+  options[:license_header][:ruby_generator] ||= options[:ruby_generator]
 
   return options
 end
@@ -157,7 +165,6 @@ def compose_file(options={})
   lines = Array.new
   if ruby_generator_data[:header]
     lines.push(ruby_generator_data[:header])
-    lines.push("")
   end
 
   lines.push(license_header(options[:license_header]))
@@ -188,12 +195,11 @@ def compose_file(options={})
   end
 
   if ruby_generator_data[:footer]
-    lines.push("")
     lines.push(ruby_generator_data[:footer])
   end
 
   return <<-EOF
-#{lines.join(options[:line_ending])}
+#{lines.map(&:strip).join(options[:line_ending])}
 EOF
 end
 
