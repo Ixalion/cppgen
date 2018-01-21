@@ -80,6 +80,7 @@ end
 #   public: Hash, # (For hash fields see generate_class_scope)
 #   project_includes: Array -> String, # e.g. my_other_header.h
 #   system_includes: Array -> String, # e.g. iostream
+#   path: String # Defaults to nil, if Falsy, then default path generation is used.
 #   ruby_generator: Boolean # defaults to false
 # }
 def validate_class_options(options={})
@@ -89,6 +90,8 @@ def validate_class_options(options={})
 
   options[:project_includes] ||= Array.new
   options[:system_includes] ||= Array.new
+
+  options[:path] ||= nil
 
   options[:ruby_generator] ||= false
 
@@ -329,6 +332,11 @@ def class_file_write(options={})
   # The header file
   header_filename = "#{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
   header_directory = "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
+
+  if options[:path]
+    header_directory = options[:path]
+  end
+
   file_write(
     filename: header_filename,
     directory: header_directory,
@@ -340,6 +348,11 @@ def class_file_write(options={})
   # The source file
   source_filename = "#{compose_class_base_filename(options.clone)}.#{SOURCE_FILE_EXTENSION}"
   source_directory = "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
+
+  if options[:path]
+    source_directory = options[:path]
+  end
+
   file_write(
     filename: source_filename,
     directory: source_directory,

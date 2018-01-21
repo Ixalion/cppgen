@@ -39,6 +39,9 @@ Options
     --project-includes      Sets the system includes for the class
                             <file1> [file2...]
 
+    --path                  Sets the path that will be used. This overrides the
+                            default path generation based on the namespace.
+
 -r  --ruby-gen              Generates all of the files as ruby-gen files.
 
     --simulate              Does not create any files, will just print

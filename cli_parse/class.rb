@@ -93,6 +93,8 @@ def class_arguments_parse(args, use_struct)
       current_mode = :system_includes
     when "--project-includes"
       current_mode = :project_includes
+    when "--path"
+      current_mode = :path
     when "-r", "--ruby-gen"
       options[:ruby_generator] = true
     when "--simulate"
@@ -111,6 +113,8 @@ def class_arguments_parse(args, use_struct)
         options[:system_includes].push(param)
       when :project_includes
         options[:project_includes].push(param)
+      when :path
+        options[:path] = param
       end
     end
   end
@@ -120,6 +124,9 @@ def class_arguments_parse(args, use_struct)
 
     header_filename = "#{compose_class_base_filename(options.clone)}.#{HEADER_FILE_EXTENSION}"
     header_directory = "#{File.join(HEADER_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
+    if options[:path]
+      header_directory = options[:path]
+    end
     puts "// #{File.join(header_directory,header_filename)}"
     puts klass[:header]
 
@@ -129,6 +136,9 @@ def class_arguments_parse(args, use_struct)
     puts ""
     source_filename = "#{compose_class_base_filename(options.clone)}.#{SOURCE_FILE_EXTENSION}"
     source_directory = "#{File.join(SOURCE_FILE_DIRECTORY, build_namespace_directory(options.clone))}"
+    if options[:path]
+      source_directory = options[:path]
+    end
     puts "// #{File.join(source_directory, source_filename)}"
     puts klass[:source]
   else
